@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>位置情報共有システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">位置情報共有システム</a>
+            <div class="d-flex align-items-center">
+                <div id="userInfo" class="text-light me-3">
+                    <span id="currentUserId" class="me-2"></span>
+                </div>
+                <button id="logoutButton" class="btn btn-outline-light" style="display: none;">
+                    <i class="bi bi-box-arrow-right me-1"></i>ログアウト
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4>位置情報共有システムの使い方</h4>
+                        <hr>
+                        <h5>1. アカウントの作成とログイン</h5>
+                        <ul>
+                            <li>初めての方は「新規登録」タブで登録してください
+                                <ul>
+                                    <li>個人番号：半角英数字で入力</li>
+                                    <li>パスワード：6文字以上</li>
+                                </ul>
+                            </li>
+                            <li>2回目以降は「ログイン」タブからログインできます</li>
+                        </ul>
+
+                        <h5>2. 他のユーザーの位置情報を見る</h5>
+                        <ul>
+                            <li>地図画面右側の「追加」ボタンをクリック</li>
+                            <li>追跡したい人の個人番号とパスワードを入力</li>
+                            <li>任意で表示名を設定可能（自分のブラウザでのみ表示）</li>
+                            <li>追加したユーザーの位置情報が地図上に表示されます</li>
+                        </ul>
+
+                        <h5>3. 位置情報の共有</h5>
+                        <ul>
+                            <li>自分の位置情報を共有したい人に、個人番号とパスワードを教えてください</li>
+                            <li>位置情報は自動的に更新されます（約10秒ごと）</li>
+                            <li>ブラウザの位置情報へのアクセスを許可する必要があります</li>
+                        </ul>
+
+                        <div class="alert alert-info">
+                            <strong>セキュリティについて：</strong>
+                            <ul class="mb-0">
+                                <li>位置情報を見るには、相手の個人番号とパスワードが必要です</li>
+                                <li>パスワードは暗号化して保存されます</li>
+                                <li>信頼できる人とのみパスワードを共有してください</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="register" role="tabpanel" aria-labelledby="register-tab">
+                <h2>新規登録</h2>
+                <form id="registration-form">
+                    <label for="register-username">ユーザー名:</label>
+                    <input type="text" id="register-username" name="register-username" required>
+                    <label for="register-password">パスワード:</label>
+                    <input type="password" id="register-password" name="register-password" required>
+                    <button type="submit">登録</button>
+                </form>
+            </div>
+            <div class="tab-pane fade" id="login" role="tabpanel" aria-labelledby="login-tab">
+                <h2>ログイン</h2>
+                <form id="login-form">
+                    <label for="login-username">ユーザー名:</label>
+                    <input type="text" id="login-username" name="login-username" required>
+                    <label for="login-password">パスワード:</label>
+                    <input type="password" id="login-password" name="login-password" required>
+                    <button type="submit">ログイン</button>
+                </form>
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button" role="tab" aria-controls="register" aria-selected="true">新規登録</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="false">ログイン</button>
+            </li>
+        </ul>
+
+        <div id="mapContainer" style="display: none;">
+            <div class="row">
+                <div class="col-md-12">
+                    <h2>マップ機能</h2>
+                    <p>ここにマップ機能の内容が表示されます。</p>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8nEm7dM2lm7LE3AzCINNgSEaeD7P63XM&libraries=places"></script>
+        <script src="/js/auth.js"></script>
+        <script src="/js/map.js"></script>
+        <script src="/js/trackedUsers.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                window.auth = new Auth();
+                window.trackedUsers = new TrackedUsers();
+            });
+        </script>
+        <script>
+            function initMap() {
+                // マップを初期化するロジックをここに追加
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        // ここでマップに位置情報を表示するロジックを追加
+                        console.log('現在の位置:', lat, lng);
+                        // 例: マーカーを表示する処理
+                        // map.setCenter(new google.maps.LatLng(lat, lng));
+                        // new google.maps.Marker({ position: { lat, lng }, map: map });
+                    }, function() {
+                        console.error('位置情報の取得に失敗しました。');
+                    });
+                } else {
+                    console.error('このブラウザは位置情報をサポートしていません。');
+                }
+            }
+            // ページが読み込まれたときにマップを初期化
+            window.onload = initMap;
+        </script>
+        <script>
+            function getCurrentPosition() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        console.log('現在の位置:', lat, lng);
+                        // ここで位置情報を表示するロジックを追加
+                        document.getElementById('mapContainer').style.display = 'block';
+                        document.getElementById('mapContainer').innerHTML = `現在の位置: ${lat}, ${lng}`;
+                    }, function() {
+                        console.error('位置情報の取得に失敗しました。');
+                    });
+                } else {
+                    console.error('このブラウザは位置情報をサポートしていません。');
+                }
+            }
+            // ボタンをクリックしたときに位置情報を取得
+            document.getElementById('getPositionButton').addEventListener('click', getCurrentPosition);
+        </script>
+        <button id="getPositionButton">現在の位置を取得</button>
+        <script>
+            document.getElementById('registration-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const username = document.getElementById('register-username').value;
+                const password = document.getElementById('register-password').value;
+                // ユーザー登録処理をここに追加
+                // 例: APIを呼び出してユーザーを登録する
+                // 成功した場合、システムページに遷移
+                window.location.href = 'system.html';
+            });
+            document.getElementById('login-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const username = document.getElementById('login-username').value;
+                const password = document.getElementById('login-password').value;
+                // ログイン処理をここに追加
+                // 例: APIを呼び出してユーザーを認証する
+                // 成功した場合、システムページに遷移
+                window.location.href = 'system.html';
+            });
+        </script>
+        <script>
+        </script>
+    </body>
+</html>
